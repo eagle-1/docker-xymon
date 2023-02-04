@@ -31,5 +31,7 @@ RUN a2enmod rewrite authz_groupfile cgi; \
 VOLUME /etc/xymon /var/lib/xymon /usr/lib/xymon
 EXPOSE 80 1984
 
+HEALTHCHECK --interval=5m --timeout=3s --start-period=30s CMD /usr/lib/xymon/server/bin/xymon localhost ping || exit 1
+
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/etc/init.d/container-start"]
