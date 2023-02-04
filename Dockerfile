@@ -1,19 +1,17 @@
 FROM ubuntu:20.04
 MAINTAINER Dewey Sasser <dewey@deweysasser.com>
 
-ENV DEBIAN_FRONTEND=noninteractive TZ=posixrules
+ENV DEBIAN_FRONTEND=noninteractive TZ=Europe/Berlin
 ADD AutomaticCleanup /etc/apt/apt.conf.d/99AutomaticCleanup
 
 # Install what we need from Ubuntu
-RUN apt-get update
-
 # tcpdump is for debugging client issues, others are required
-RUN apt-get install -y curl xymon apache2 tcpdump ssmtp mailutils rrdtool ntpdate
-
-# Get the 'dumb init' package for proper 'init' behavior
-RUN curl -L https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_amd64.deb > dumb-init.deb && \
-    dpkg -i dumb-init.deb && \
-    rm dumb-init.deb
+RUN set -uex \
+    && apt-get update \
+    && apt-get install --no-install-recommends -y curl xymon apache2 tcpdump ssmtp mailutils rrdtool ntpdate tzdata rpcbind fping dumb-init \
+    && apt-get clean all \
+    && rm -rf /var/cache/apt/archives/* /var/cache/apt/*.bin /var/lib/apt/lists/* /tmp/* /var/tmp/* \
+    && rm -rf /usr/share/man/* /usr/share/doc/*
 
 ADD add-files /
 
@@ -24,14 +22,13 @@ ADD add-files /
 # blank volume, we can initialize it
 
 RUN a2enmod rewrite authz_groupfile cgi; \
-     perl -i -p -e "s/^127.0.0.1.*/127.0.0.1    xymon-docker # bbd http:\/\/localhost\//" /etc/xymon/hosts.cfg; \
+     perl -i -p -e "s/^127.0.0.1.*/127.0.0.1    xymon # bbd apache http:\/\/localhost\//" /etc/xymon/hosts.cfg; \
+     perl -i -p -e "s/xymon-docker/xymon/" /etc/init.d/container-start; \
      chown xymon:xymon /etc/xymon/ghostlist.cfg /var/lib/xymon/www ; \
      tar -C /etc/xymon -czf /root/xymon-config.tgz . ; \
      tar -C /var/lib/xymon -czf /root/xymon-data.tgz .
 
-
-
-VOLUME /etc/xymon /var/lib/xymon
+VOLUME /etc/xymon /var/lib/xymon /usr/lib/xymon
 EXPOSE 80 1984
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
