@@ -12,6 +12,6 @@ cp $list $tmp
 (
     $xymon localhost ghostlist | awk -F\| '{print $2 " " $1 " # noconn"}'
     cat $tmp
-) | sort -u > $list
+) | sort -u -k 2 > $list
 
 
