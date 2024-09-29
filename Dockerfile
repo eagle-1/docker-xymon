@@ -1,5 +1,4 @@
 FROM ubuntu:20.04
-MAINTAINER Dewey Sasser <dewey@deweysasser.com>
 
 ENV DEBIAN_FRONTEND=noninteractive TZ=Europe/Berlin
 ADD AutomaticCleanup /etc/apt/apt.conf.d/99AutomaticCleanup
@@ -8,7 +7,7 @@ ADD AutomaticCleanup /etc/apt/apt.conf.d/99AutomaticCleanup
 # tcpdump is for debugging client issues, others are required
 RUN set -uex \
     && apt-get update \
-    && apt-get install --no-install-recommends -y curl xymon apache2 tcpdump ssmtp mailutils rrdtool ntpdate tzdata rpcbind fping dumb-init \
+    && apt-get install --no-install-recommends -y curl xymon apache2 tcpdump ssmtp mailutils rrdtool ntpdate tzdata rpcbind fping openssl ca-certificates wget dumb-init netcat-openbsd \
     && apt-get clean all \
     && rm -rf /var/cache/apt/archives/* /var/cache/apt/*.bin /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && rm -rf /usr/share/man/* /usr/share/doc/*
